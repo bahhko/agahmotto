@@ -1,170 +1,136 @@
 #!/usr/bin/python
 
-# import ascii_art
-import boto3, time, sys
+import boto3, time, sys, gettext
 from colorama import Fore
-from ascii_art import image, banner
-from menu_ajuda import menu_ajuda_pt, menu_ajuda_en
+from main.ascii_art import image, banner
+from main.menu_ajuda import menu_ajuda_pt, menu_ajuda_en
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
-def menu_idioma():
-	while True:
-		try:
-			print(Fore.WHITE + "\n##################################################\n")
-			print("Which language do you want to use in the program?\n\n1 - English\n2 - Português\n3 - Quit Program\n")
-			print("##################################################\n")
-			lang_choice = int(input("Pick your language: "))
+# Variável global de tradução
+_ = gettext.gettext
 
-			if lang_choice == 1:
-				if a == "help":
-					menu_ajuda_en()
-					break
-				else:
-					ingles()
-					break
-			elif lang_choice == 2:
-				if a == "help":
-					menu_ajuda_pt()
-					break
-				else:
-					portugues()
-					break
-			elif lang_choice == 3:
-				sys.exit()
-			else:
-				print("\nInvalid choice. Make sure to take a language for the program.")
-		except ValueError:
-			print("\n\nInvalid choice. Make sure to take a language for the program.")
+def set_language_en():
+    """Função que configura o idioma para inglês."""
+    lang = gettext.translation('messages', localedir='locales', languages=['en'])
+    lang.install()
+    return lang.gettext
 
-def awsinstanceenglish():
-	while True:
-		try:
-			print(Fore.RED + "The Eye requests your access keys...\n")
-			aws_access_key = input("Provide your Access Key: ")
-			aws_secret_access_key = input("Now, provide your Secret Key: ")
-			region_name = input("It also wants to know which region you are calling from: ")
+def set_language_pt():
+    """Função que configura o idioma para português."""
+    lang = gettext.translation('messages', localedir='locales', languages=['pt'])
+    lang.install()
+    return lang.gettext
 
-			ec2_client = boto3.client('ec2', region_name=region_name, aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_access_key)
+def language_menu(help_requested=False):
+    """Menu de seleção de linguagem do programa"""
+    global _
+    while True:
+        try:
+            print(Fore.WHITE + "\n--------------------------------------------------\n")
+            print(_("Which language do you want to use in the program?\n\n1 - English\n2 - Português\n3 - Quit Program\n"))
+            print("--------------------------------------------------\n")
+            language = int(input(_("Pick your language: ")))
 
-			def action_instance(action, instance_ids):
-				if action == "1":
-					ec2_client.start_instances(InstanceIds=instance_ids)
-				elif action == "2":
-					ec2_client.stop_instances(InstanceIds=instance_ids)
-				else:
-					print("The Eye did not understand the request.")
+            if language == 1:
+                _ = set_language_en()
+                if help_requested:
+                    menu_ajuda_en()
+                else:
+                    welcome()
+                break
+            elif language == 2:
+                _ = set_language_pt()
+                if help_requested:
+                    menu_ajuda_pt()
+                else:
+                    welcome()
+                break
+            elif language == 3:
+                sys.exit()
+            else:
+                print(_("\nInvalid choice. Make sure to pick a language for the program.\n"))
+        except ValueError:
+            print(_("\nInvalid choice. Make sure to pick a language for the program."))
 
-			instance_id = input("\nVery well. Now, what are your target instances? Provide the IDs: ")
-			eye_action = input("Finally, what is your wish? Start or stop the instance? 1 - Start / 2 - Stop: ")
+def aws_instance():
+    """Gerencia as instâncias EC2 na AWS"""
+    while True:
+        try:
+            print(Fore.RED + _("The Eye requests your access keys..."))
+            aws_access_key = input(_("Provide your Access Key: "))
+            aws_secret_access_key = input(_("Now, provide your Secret Key: "))
+            region_name = input(_("It also wants to know which region you are calling from: "))
 
-			action_instance(action=eye_action, instance_ids=[instance_id])
+            ec2_client = boto3.client('ec2', region_name=region_name, 
+                                      aws_access_key_id=aws_access_key, 
+                                      aws_secret_access_key=aws_secret_access_key)
 
-			if eye_action == "1":
-				print("\nExcellent! Now, wait 30 seconds and observe what the Eye was able to find...")
-				time.sleep(30)
+            instance_id = input(_("Very well. Now, what are your target instances? Provide the IDs: "))
+            eye_action = input(_("Finally, what is your wish? Start or stop the instance? 1 - Start / 2 - Stop: "))
 
-				response = ec2_client.describe_instances(InstanceIds=[instance_id])
-				reservations = response['Reservations']
-				instances = reservations[0]['Instances']
-				instance = instances[0]
-				ipv4 = instance.get('PublicIpAddress')
+            handle_instance_action(eye_action, instance_id, ec2_client)
+        except NoCredentialsError:
+            print(_("\nError: No credentials found.\n"))
+        except PartialCredentialsError:
+            print(_("\nError: Incomplete credentials.\n"))
+        except Exception as e:
+            print(_("\nUnexpected error: {e}\n").format(e=e))
 
-				if ipv4:
-					print(f'\n[+] Here is the entry gate - https://{ipv4}/')
-					break
-				else:
-					retry = input('Unfortunately, the Eye could not find what was provided. Would you like to try again? 1 - Yes / 2 - No: ')
-					if retry == "2":
-						break
-			elif eye_action == "2":
-				print("\nThe Eye bids you farewell... Now, your instance will be stopped.")
-				break
+def handle_instance_action(action, instance_id, ec2_client):
+    """Executa a ação na instância AWS"""
+    try:
+        if action == "1":
+            ec2_client.start_instances(InstanceIds=[instance_id])
+            check_instance_status(instance_id, ec2_client)
+        elif action == "2":
+            ec2_client.stop_instances(InstanceIds=[instance_id])
+            print(_("The Eye bids you farewell... Now, your instance will be stopped."))
+        else:
+            print(_("The Eye did not understand the request."))
+    except Exception as e:
+        print(_("\nError during instance action: {e}\n").format(e=e))
 
-		except NoCredentialsError:
-			print('\nError: No credentials found.')
-		except PartialCredentialsError:
-			print('\nError: Incomplete credentials.')
-		except Exception as e:
-			print(f'\nUnexpected error: {e}')
+def check_instance_status(instance_id, ec2_client):
+    """Verifica o status da instância após ação"""
+    print(_("Excellent! Now, wait 30 seconds and observe what the Eye was able to find..."))
+    time.sleep(30)
 
-def awsintanciaportugues():
-	while True:
-		try:
-			print(Fore.RED + "O Olho deseja as suas chaves de acesso...\n")
-			aws_access_key = input("Entregue-o a sua Access Key: ")
-			aws_secret_access_key = input("Agora, a sua Secret Key: ")
-			region_name = input("Ele também quer saber de qual região você o chama: ")
+    response = ec2_client.describe_instances(InstanceIds=[instance_id])
+    ipv4 = response['Reservations'][0]['Instances'][0].get('PublicIpAddress')
 
-			ec2_client = boto3.client('ec2', region_name=region_name, aws_access_key_id=aws_access_key, aws_secret_access_key=aws_secret_access_key)
+    if ipv4:
+        print(_("[+] Here is the entry gate - https://{ipv4}/").format(ipv4=ipv4))
+    else:
+        retry = input(_("Unfortunately, the Eye could not find what was provided. Would you like to try again? 1 - Yes / 2 - No: "))
+        if retry == "1":
+            check_instance_status(instance_id, ec2_client)
 
-			def action_instance(action, instance_ids):
-				if action == "1":
-					ec2_client.start_instances(InstanceIds=instance_ids)
-				elif action == "2":
-					ec2_client.stop_instances(InstanceIds=instance_ids)
-				else:
-					print("O Olho não entendeu qual é o seu desejo.")
+def welcome():
+    """Exibe a tela de boas-vindas e chamada do menu AWS"""
+    print(_("\nWelcome to Agahmotto!"))
+    print(_("This program is a combination of tools focused on SIEM for analysis in your environment.\n"))
+    print(_("Be prepared for the truths that the Eye will reveal...\n"))
+    print(_("\nFor information on how to use and prepare the environment, use -h or --help."))
+    print(_("Bruno, Gabriel, Lucas and Rodrigo.\n"))
+    aws_instance()
 
-			instance_id = input("\nMuito bem. Agora, quais são as suas instâncias alvo? Informe-o os IDs: ")
-			eye_action = input("Por fim, qual é o seu desejo? Ligar ou desligar a instância? 1 - Ligar / 2 - Desligar: ")
+def main():
+    """Executa o programa principal"""
+    try:
+        if len(sys.argv) >= 3:
+            print(_("Invalid data entry. Make sure you only use -h or --help as a parameter."))
+        elif sys.argv[1] in ["-h", "--help"]:
+            image()
+            banner()
+            time.sleep(1.5)
+            language_menu(help_requested=True)
+        else:
+            print(_("Invalid parameter. Make sure you only use -h or --help as a parameter."))
+    except IndexError:
+        image()
+        banner()
+        time.sleep(1.5)
+        language_menu()
 
-			action_instance(action=eye_action, instance_ids=[instance_id])
-
-			if eye_action == "1":
-				print("\nExcelente! Agora, aguarde 30 segundos e observe tudo o que Olho foi capaz de encontrar...")
-				time.sleep(30)
-
-				response = ec2_client.describe_instances(InstanceIds=[instance_id])
-				reservations = response['Reservations']
-				instances = reservations[0]['Instances']
-				instance = instances[0]
-				ipv4 = instance.get('PublicIpAddress')
-
-				if ipv4:
-					print(f'\n[+] Eis aqui o portão de entrada - https://{ipv4}/')
-					break
-				else:
-					nova_tentativa = input('Infelizmente, o Olho não encontrou o que lhe foi passado. Deseja tentar novamente? 1 - Sim / 2 - Não: ')
-					if nova_tentativa == "2":
-						break
-			elif eye_action == "2":
-				print("\nO Olho, então, lhe dá adeus... Agora, a sua instância será desligada.")
-				break
-
-		except NoCredentialsError:
-			print('\nErro: Nenhuma credencial encontrada.')
-		except PartialCredentialsError:
-			print('\nErro: Credenciais incompletas.')
-		except Exception as e:
-			print(f'\nErro inesperado: {e}')
-
-def ingles():
-	# ascii_art()
-	print("\nWelcome to Agahmotto. This program is a combination of tools focused on SIEM for analysis in your environment.\nBe prepared for the truths that the Eye will reveal...\n\n--> For information on how to use and prepare the environment, use -h or --help.\n\n- Bruno, Lucas, Rodrigo and Gabriel\n\n")
-	awsinstanceenglish()
-	sys.exit()
-
-def portugues():
-	# ascii_art()
-	print("\nBem-vindo ao Agahmotto. Esse programa é uma combinação de ferramentas com foco em SIEM para análise do seu ambiente.\nEsteja preparado(a) para as verdades que o Olho revelará...\n\n--> Para informações sobre o modo de uso e preparação do ambiente, use -h ou --help.\n\n- Bruno, Lucas, Rodrigo e Gabriel\n\n")
-	awsintanciaportugues()
-	sys.exit()
-
-try:
-	if len(sys.argv) >= 3:
-		print("Invalid data entry. Make sure you only use -h or --help as a parameter.")
-	elif sys.argv[1] in ["-h", "--help"]:
-		image()
-		banner()
-		time.sleep(1.5)
-		a = "help"
-		menu_idioma()
-	elif sys.argv[1] not in ["-h", "--help"]:
-		print("Invalid parameter. Make sure you only use -h or --help as a parameter.")
-except IndexError:
-	image()
-	banner()
-	time.sleep(1.5)
-	a = "none"
-	menu_idioma()
-
+if __name__ == "__main__":
+    main()

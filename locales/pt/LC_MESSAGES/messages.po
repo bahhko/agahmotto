@@ -1,0 +1,67 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Agahmotto 1.0\n"
+"POT-Creation-Date: 2024-09-23 14:30+0000\n"
+"PO-Revision-Date: 2024-09-23 14:30+0000\n"
+"Last-Translator: Bruno Atilio <bruno.atilio.carvalho@gmail.com>\n"
+"Language: pt\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"plural-forms: nplurals=2; plural=(n > 1);\n"
+
+
+msgid "\nWelcome to Agahmotto!"
+msgstr "\nBem-vindo ao Agahmotto!"
+
+msgid "This program is a combination of tools focused on SIEM for analysis in your environment.\n"
+msgstr "Este programa é uma combinação de ferramentas com foco em SIEM para análise do seu ambiente.\n"
+
+msgid "Be prepared for the truths that the Eye will reveal...\n"
+msgstr "Esteja preparado para as verdades que o Olho revelará...\n"
+
+msgid "\nFor information on how to use and prepare the environment, use -h or --help."
+msgstr "\nPara informações sobre como usar e preparar o ambiente, use -h ou --help."
+
+msgid "Bruno, Gabriel, Lucas and Rodrigo.\n"
+msgstr "Bruno, Gabriel, Lucas e Rodrigo.\n"
+
+msgid "The Eye requests your access keys..."
+msgstr "O Olho deseja suas chaves de acesso..."
+
+msgid "Provide your Access Key: "
+msgstr "Forneça sua Chave de Acesso: "
+
+msgid "Now, provide your Secret Key: "
+msgstr "Agora, sua Chave Secreta: "
+
+msgid "It also wants to know which region you are calling from: "
+msgstr "Ele também quer saber de qual região você está chamando: "
+
+msgid "The Eye did not understand the request."
+msgstr "O Olho não entendeu qual é o seu desejo."
+
+msgid "Very well. Now, what are your target instances? Provide the IDs: "
+msgstr "Muito bem. Agora, quais são as suas instâncias alvo? Informe os IDs: "
+
+msgid "Finally, what is your wish? Start or stop the instance? 1 - Start / 2 - Stop: "
+msgstr "Por fim, qual é o seu desejo? Ligar ou desligar a instância? 1 - Ligar / 2 - Desligar: "
+
+msgid "Excellent! Now, wait 30 seconds and observe what the Eye was able to find..."
+msgstr "Excelente! Agora, aguarde 30 segundos e observe tudo o que o Olho foi capaz de encontrar..."
+
+msgid "[+] Here is the entry gate - https://{ipv4}/"
+msgstr "[+] Eis aqui o portão de entrada - https://{ipv4}/"
+
+msgid "Unfortunately, the Eye could not find what was provided. Would you like to try again? 1 - Yes / 2 - No: "
+msgstr "Infelizmente, o Olho não encontrou o que lhe foi passado. Deseja tentar novamente? 1 - Sim / 2 - Não: "
+
+msgid "The Eye bids you farewell... Now, your instance will be stopped."
+msgstr "O Olho lhe dá adeus... Agora, a sua instância será desligada."
+
+msgid "\nError: No credentials found.\n"
+msgstr "\nErro: Nenhuma credencial encontrada.\n"
+
+msgid "\nError: Incomplete credentials.\n"
+msgstr "\nErro: Credenciais incompletas.\n"
+
+msgid "\nUnexpected error: {e}\n"
+msgstr "\nErro inesperado: {e}\n"
